@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quick Math Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      color: #4caf50;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #1e1e1e;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .score, .timer {
+      font-size: 1.3rem;
+      margin: 0.7rem 0;
+    }
+
+    .question {
+      font-size: 2rem;
+      margin: 1.5rem 0;
+    }
+
+    .option-btn {
+      background-color: #03a9f4;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin: 1rem;
+    }
+
+    .option-btn:hover {
+      background-color: #0288d1;
+    }
+
+    .start-btn, .restart-btn {
+      padding: 0.8rem 1.6rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quick Math ➕</h1>
+  <div class="container">
+    <div class="score">Score: <span id="score">0</span></div>
+    <div class="timer">⏱ Time: <span id="time">10</span>s</div>
+    <div class="question" id="question">Press Start to Begin!</div>
+
+    <div id="options" class="options"></div>
+
+    <button class="start-btn" id="startBtn">Start</button>
+    <button class="restart-btn" id="restartBtn" style="display:none;">Restart</button>
+  </div>
+
+  <script>
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let score = 0;
+    let time = 10;
+    let correctAnswer = 0;
+    let timer;
+
+    function generateQuestion() {
+      const num1 = Math.floor(Math.random() * 10);
+      const num2 = Math.floor(Math.random() * 10);
+      correctAnswer = num1 + num2;
+      questionEl.textContent = `${num1} + ${num2} = ?`;
+
+      // Generate 3 incorrect options
+      const options = new Set();
+      options.add(correctAnswer);
+      while (options.size < 4) {
+        options.add(correctAnswer + Math.floor(Math.random() * 10 - 5));
+      }
+
+      optionsEl.innerHTML = ''; // Clear previous options
+      // Create buttons for each option
+      [...options].sort(() => Math.random() - 0.5).forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.className = "option-btn";
+        btn.onclick = () => checkAnswer(opt);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      if (selected === correctAnswer) {
+        score++;
+        time++;
+      } else {
+        time -= 2;
+      }
+      scoreEl.textContent = score;
+      generateQuestion();
+    }
+
+    function startGame() {
+      score = 0;
+      time = 10;
+      scoreEl.textContent = score;
+      timeEl.textContent = time;
+      generateQuestion();
+
+      startBtn.style.display = "none";
+      restartBtn.style.display = "inline-block";
+
+      clearInterval(timer);
+      timer = setInterval(() => {
+        time--;
+        timeEl.textContent = time;
+        if (time <= 0) {
+          clearInterval(timer);
+          questionEl.textContent = "⏳ Time's Up!";
+          saveHighScore();
+        }
+      }, 1000);
+    }
+
+    function saveHighScore() {
+      const high = localStorage.getItem("mathHighScore") || 0;
+      if (score > high) {
+        localStorage.setItem("mathHighScore", score);
+        alert("🎉 New High Score: " + score);
+      } else {
+        alert("Your Score: " + score);
+      }
+    }
+
+    startBtn.onclick = startGame;
+    restartBtn.onclick = startGame;
+  </script>
+</body>
+</html>
